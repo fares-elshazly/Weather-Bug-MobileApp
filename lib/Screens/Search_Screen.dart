@@ -1,23 +1,65 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 
-var height, width;
-final searchController = TextEditingController();
-final myPage = PageController(initialPage: 0);
-ValueNotifier<Color> locationsColor = ValueNotifier(Colors.orange);
-ValueNotifier<Color> settingsColor = ValueNotifier(Colors.black87);
+class SearchScreenData extends InheritedWidget {
+  final Widget child;
+  final height;
+  final width;
+  final pageController;
+  final searchController;
+  final earthIcon;
+  final ValueNotifier<Color> locationsColor;
+  final ValueNotifier<Color> settingsColor;
+  SearchScreenData(
+      {Key key,
+      this.child,
+      this.height,
+      this.width,
+      this.pageController,
+      this.searchController,
+      this.earthIcon,
+      this.locationsColor,
+      this.settingsColor})
+      : super(key: key, child: child);
+
+  static SearchScreenData of(BuildContext context) {
+    return (context.inheritFromWidgetOfExactType(SearchScreenData)
+        as SearchScreenData);
+  }
+
+  @override
+  bool updateShouldNotify(SearchScreenData oldWidget) {
+    return true;
+  }
+}
 
 class SearchScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    height = MediaQuery.of(context).size.height;
-    width = MediaQuery.of(context).size.width;
+    return SearchScreenData(
+      height: MediaQuery.of(context).size.height,
+      width: MediaQuery.of(context).size.width,
+      pageController: PageController(initialPage: 0),
+      searchController: TextEditingController(),
+      earthIcon: IconData(0xf38c,
+          fontFamily: CupertinoIcons.iconFont,
+          fontPackage: CupertinoIcons.iconFontPackage),
+      locationsColor: ValueNotifier(Colors.orange),
+      settingsColor: ValueNotifier(Colors.black87),
+      child: SearchScreenWidget(),
+    );
+  }
+}
+
+class SearchScreenWidget extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       extendBody: true,
-      body: buildBody(),
+      body: buildBody(context),
       bottomNavigationBar: BottomAppBar(
         shape: CircularNotchedRectangle(),
-        child: buildBottomAppBar(),
+        child: buildBottomAppBar(context),
       ),
       floatingActionButton: buildFAB(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
@@ -25,44 +67,48 @@ class SearchScreen extends StatelessWidget {
   }
 }
 
-Widget buildBody() {
+Widget buildBody(BuildContext context) {
   return PageView(
-    controller: myPage,
+    controller: SearchScreenData.of(context).pageController,
     children: <Widget>[
-      Center(
-        child: Container(
-          width: width * 0.9,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              SizedBox(height: height * 0.04),
-              buildTitle('Locations'),
-              SizedBox(height: height * 0.04),
-              buildRoundedTextField('Search', Icons.search, searchController),
-              SizedBox(height: height * 0.04),
-              Expanded(
-                child: buildListView('Recently Searched', [
-                  'Alexandria',
-                  'Miami',
-                  'Las Vegas',
-                  'Alexandria',
-                  'Miami',
-                  'Las Vegas',
-                  'Alexandria',
-                  'Miami',
-                  'Las Vegas'
-                ]),
-              ),
-            ],
-          ),
-        ),
-      ),
-      Center(child: Text('Hello World!'))
+      buildLocationsPage(context),
+      Center(child: Text('Settings Page!'))
     ],
   );
 }
 
-Widget buildTitle(String title) {
+Widget buildLocationsPage(BuildContext context) {
+  return Center(
+    child: Container(
+      width: SearchScreenData.of(context).width * 0.9,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          SizedBox(height: SearchScreenData.of(context).height * 0.04),
+          buildTitle(context, 'Locations'),
+          SizedBox(height: SearchScreenData.of(context).height * 0.04),
+          buildRoundedTextField(context, 'Search', Icons.search),
+          SizedBox(height: SearchScreenData.of(context).height * 0.04),
+          Expanded(
+            child: buildListView('Recently Searched', [
+              'Alexandria',
+              'Miami',
+              'Las Vegas',
+              'Alexandria',
+              'Miami',
+              'Las Vegas',
+              'Alexandria',
+              'Miami',
+              'Las Vegas'
+            ]),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+Widget buildTitle(BuildContext context, String title) {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: <Widget>[
@@ -71,18 +117,18 @@ Widget buildTitle(String title) {
         color: Color.fromARGB(255, 255, 160, 14),
         thickness: 5,
         indent: 2,
-        endIndent: width * 0.8,
+        endIndent: SearchScreenData.of(context).width * 0.8,
       )
     ],
   );
 }
 
 Widget buildRoundedTextField(
-    String hint, IconData preIcon, TextEditingController controller) {
+    BuildContext context, String hint, IconData preIcon) {
   return Container(
     height: 55,
     child: TextField(
-      controller: controller,
+      controller: SearchScreenData.of(context).searchController,
       decoration: InputDecoration(
           border: InputBorder.none, prefixIcon: Icon(preIcon), labelText: hint),
       onSubmitted: (v) {
@@ -132,37 +178,35 @@ Widget buildListView(String title, List<String> places) {
   );
 }
 
-Widget buildBottomAppBar() {
-  IconData earth = IconData(0xf38c,
-      fontFamily: CupertinoIcons.iconFont,
-      fontPackage: CupertinoIcons.iconFontPackage);
+Widget buildBottomAppBar(BuildContext context) {
   return Container(
-    height: height * 0.1,
+    height: SearchScreenData.of(context).height * 0.1,
     child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: <Widget>[
         FlatButton(
           child: ValueListenableBuilder(
-            valueListenable: locationsColor,
+            valueListenable: SearchScreenData.of(context).locationsColor,
             builder: (BuildContext context, dynamic value, Widget child) {
               return Column(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: <Widget>[
-                  Icon(earth, size: 25, color: value),
+                  Icon(SearchScreenData.of(context).earthIcon,
+                      size: 25, color: value),
                   Text('Locations', style: TextStyle(color: value)),
                 ],
               );
             },
           ),
           onPressed: () {
-            locationsColor.value = Colors.orange;
-            settingsColor.value = Colors.black87;
-            myPage.jumpToPage(0);
+            SearchScreenData.of(context).locationsColor.value = Colors.orange;
+            SearchScreenData.of(context).settingsColor.value = Colors.black87;
+            SearchScreenData.of(context).pageController.jumpToPage(0);
           },
         ),
         FlatButton(
           child: ValueListenableBuilder(
-            valueListenable: settingsColor,
+            valueListenable: SearchScreenData.of(context).settingsColor,
             builder: (BuildContext context, dynamic value, Widget child) {
               return Column(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -174,9 +218,9 @@ Widget buildBottomAppBar() {
             },
           ),
           onPressed: () {
-            locationsColor.value = Colors.black87;
-            settingsColor.value = Colors.orange;
-            myPage.jumpToPage(1);
+            SearchScreenData.of(context).locationsColor.value = Colors.black87;
+            SearchScreenData.of(context).settingsColor.value = Colors.orange;
+            SearchScreenData.of(context).pageController.jumpToPage(1);
           },
         ),
       ],

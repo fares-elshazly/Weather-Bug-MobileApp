@@ -2,22 +2,52 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:weather_icons/weather_icons.dart';
 
-var height, width;
+class WeatherScreenData extends InheritedWidget {
+  final Widget child;
+  final height;
+  final width;
+  final backArrowIcon;
+  WeatherScreenData(
+      {Key key, this.child, this.height, this.width, this.backArrowIcon})
+      : super(key: key, child: child);
+
+  static WeatherScreenData of(BuildContext context) {
+    return (context.inheritFromWidgetOfExactType(WeatherScreenData)
+        as WeatherScreenData);
+  }
+
+  @override
+  bool updateShouldNotify(WeatherScreenData oldWidget) {
+    return true;
+  }
+}
 
 class WeatherScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    height = MediaQuery.of(context).size.height;
-    width = MediaQuery.of(context).size.width;
+    return WeatherScreenData(
+      height: MediaQuery.of(context).size.height,
+      width: MediaQuery.of(context).size.width,
+      backArrowIcon: IconData(0xf3d5,
+          fontFamily: CupertinoIcons.iconFont,
+          fontPackage: CupertinoIcons.iconFontPackage),
+      child: WeatherScreenWidget(),
+    );
+  }
+}
+
+class WeatherScreenWidget extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
-      body: buildBody(),
+      body: buildBody(context),
       floatingActionButton: buildFAB(context),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }
 
-Widget buildBody() {
+Widget buildBody(BuildContext context) {
   return DecoratedBox(
     decoration: BoxDecoration(
       image: DecorationImage(
@@ -32,16 +62,16 @@ Widget buildBody() {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
-          SizedBox(height: height * 0.05),
+          SizedBox(height: WeatherScreenData.of(context).height * 0.05),
           buildLocation('San Francisco, California, US'),
-          SizedBox(height: height * 0.2),
+          SizedBox(height: WeatherScreenData.of(context).height * 0.2),
           buildTemperature(10),
           buildCondition('Partly Cloudy'),
-          SizedBox(height: height * 0.02),
+          SizedBox(height: WeatherScreenData.of(context).height * 0.02),
           buildDate('10:00 AM - Monday, November 11, 2019'),
-          SizedBox(height: height * 0.04),
+          SizedBox(height: WeatherScreenData.of(context).height * 0.04),
           buildConditionIcon(WeatherIcons.day_cloudy),
-          SizedBox(height: height * 0.04),
+          SizedBox(height: WeatherScreenData.of(context).height * 0.04),
           buildConditionData(88, 0, 2),
         ],
       ),
@@ -128,13 +158,11 @@ Widget buildConditionData(int humidity, int precipitation, int wind) {
 }
 
 Widget buildFAB(BuildContext context) {
-  IconData back = IconData(0xf3d5,
-      fontFamily: CupertinoIcons.iconFont,
-      fontPackage: CupertinoIcons.iconFontPackage);
   return FloatingActionButton(
     child: Padding(
       padding: const EdgeInsets.only(bottom: 5),
-      child: Icon(back, color: Colors.white, size: 40),
+      child: Icon(WeatherScreenData.of(context).backArrowIcon,
+          color: Colors.white, size: 40),
     ),
     onPressed: () => Navigator.pop(context),
   );
