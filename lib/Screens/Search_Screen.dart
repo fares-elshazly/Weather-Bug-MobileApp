@@ -1,58 +1,20 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 var height, width;
+final searchController = TextEditingController();
 final myPage = PageController(initialPage: 0);
 ValueNotifier<Color> locationsColor = ValueNotifier(Colors.orange);
 ValueNotifier<Color> settingsColor = ValueNotifier(Colors.black87);
 
 class SearchScreen extends StatelessWidget {
-  final searchController = TextEditingController();
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-    ));
     height = MediaQuery.of(context).size.height;
     width = MediaQuery.of(context).size.width;
     return Scaffold(
       extendBody: true,
-      body: PageView(
-        controller: myPage,
-        children: <Widget>[
-          Center(
-            child: Container(
-              width: width * 0.9,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  SizedBox(height: height * 0.04),
-                  buildTitle('Locations'),
-                  SizedBox(height: height * 0.04),
-                  buildRoundedTextField(
-                      'Search', Icons.search, searchController),
-                  SizedBox(height: height * 0.04),
-                  Expanded(
-                    child: buildListView('Recently Searched', [
-                      'Alexandria',
-                      'Miami',
-                      'Las Vegas',
-                      'Alexandria',
-                      'Miami',
-                      'Las Vegas',
-                      'Alexandria',
-                      'Miami',
-                      'Las Vegas'
-                    ]),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          Center(child: Text('Hello World!'))
-        ],
-      ),
+      body: buildBody(),
       bottomNavigationBar: BottomAppBar(
         shape: CircularNotchedRectangle(),
         child: buildBottomAppBar(),
@@ -61,6 +23,43 @@ class SearchScreen extends StatelessWidget {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
+}
+
+Widget buildBody() {
+  return PageView(
+    controller: myPage,
+    children: <Widget>[
+      Center(
+        child: Container(
+          width: width * 0.9,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              SizedBox(height: height * 0.04),
+              buildTitle('Locations'),
+              SizedBox(height: height * 0.04),
+              buildRoundedTextField('Search', Icons.search, searchController),
+              SizedBox(height: height * 0.04),
+              Expanded(
+                child: buildListView('Recently Searched', [
+                  'Alexandria',
+                  'Miami',
+                  'Las Vegas',
+                  'Alexandria',
+                  'Miami',
+                  'Las Vegas',
+                  'Alexandria',
+                  'Miami',
+                  'Las Vegas'
+                ]),
+              ),
+            ],
+          ),
+        ),
+      ),
+      Center(child: Text('Hello World!'))
+    ],
+  );
 }
 
 Widget buildTitle(String title) {

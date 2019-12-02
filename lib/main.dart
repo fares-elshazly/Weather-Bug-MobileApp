@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:device_preview/device_preview.dart';
-import 'package:weather_bug/Screens/Search_Screen.dart';
+import 'Screens/Search_Screen.dart';
+import 'Screens/Weather_Screen.dart';
 
 // void main() => runApp(
 //   DevicePreview(
@@ -21,7 +22,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.orange,
       ),
-      home: SearchScreen(),
+      home: WeatherScreen(),
     );
   }
 }
