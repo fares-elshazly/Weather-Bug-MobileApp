@@ -164,6 +164,7 @@ Widget buildFAB(BuildContext context) {
       child: Icon(WeatherScreenData.of(context).backArrowIcon,
           color: Colors.white, size: 40),
     ),
+    backgroundColor: Colors.black.withOpacity(0.3),
     onPressed: () => Navigator.pop(context),
   );
 }
