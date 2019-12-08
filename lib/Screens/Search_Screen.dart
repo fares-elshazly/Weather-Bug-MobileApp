@@ -1,8 +1,13 @@
+import 'package:flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:recase/recase.dart';
+import 'package:weather_bug/Blocs/Weather_Bloc/Bloc.dart';
+import 'package:weather_bug/Screens/Loading_Screen.dart';
 
 class SearchScreenData extends InheritedWidget {
-  final Widget child;
+  final child;
   final height;
   final width;
   final pageController;
@@ -36,17 +41,20 @@ class SearchScreenData extends InheritedWidget {
 class SearchScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return SearchScreenData(
-      height: MediaQuery.of(context).size.height,
-      width: MediaQuery.of(context).size.width,
-      pageController: PageController(initialPage: 0),
-      searchController: TextEditingController(),
-      earthIcon: IconData(0xf38c,
-          fontFamily: CupertinoIcons.iconFont,
-          fontPackage: CupertinoIcons.iconFontPackage),
-      locationsColor: ValueNotifier(Colors.orange),
-      settingsColor: ValueNotifier(Colors.black87),
-      child: SearchScreenWidget(),
+    return BlocProvider(
+      builder: (context) => WeatherBloc(),
+      child: SearchScreenData(
+        height: MediaQuery.of(context).size.height,
+        width: MediaQuery.of(context).size.width,
+        pageController: PageController(initialPage: 0),
+        searchController: TextEditingController(),
+        earthIcon: IconData(0xf38c,
+            fontFamily: CupertinoIcons.iconFont,
+            fontPackage: CupertinoIcons.iconFontPackage),
+        locationsColor: ValueNotifier(Colors.orange),
+        settingsColor: ValueNotifier(Colors.black87),
+        child: SearchScreenWidget(),
+      ),
     );
   }
 }
@@ -56,7 +64,24 @@ class SearchScreenWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBody: true,
-      body: buildBody(context),
+      body: BlocListener<WeatherBloc, WeatherState>(
+        listener: (context, state) {
+          if (state is LoadedWeatherState) {
+            Navigator.pushNamed(context, '/ShowWeather', arguments: state.weather);
+          } else if (state is ErrorWeatherState) {
+            buildFlushBar(context, state.error);
+          }
+        },
+        child: BlocBuilder<WeatherBloc, WeatherState>(
+          builder: (context, state) {
+            if (state is LoadingWeatherState) {
+              return LoadingScreen();
+            } else {
+              return buildBody(context);
+            }
+          },
+        ),
+      ),
       bottomNavigationBar: BottomAppBar(
         shape: CircularNotchedRectangle(),
         child: buildBottomAppBar(context),
@@ -125,6 +150,7 @@ Widget buildTitle(BuildContext context, String title) {
 
 Widget buildRoundedTextField(
     BuildContext context, String hint, IconData preIcon) {
+  final weatherBloc = BlocProvider.of<WeatherBloc>(context);
   return Container(
     height: 55,
     child: TextField(
@@ -132,7 +158,10 @@ Widget buildRoundedTextField(
       decoration: InputDecoration(
           border: InputBorder.none, prefixIcon: Icon(preIcon), labelText: hint),
       onSubmitted: (v) {
-        print('Searching For $v ...');
+        if (v.isNotEmpty) {
+          weatherBloc.add(GetWeather(city: v));
+          print('Searching For $v ...');
+        }
       },
     ),
     decoration: BoxDecoration(
@@ -234,4 +263,22 @@ Widget buildFAB() {
     tooltip: 'Get My Location',
     onPressed: () {},
   );
+}
+
+Widget buildFlushBar(BuildContext context, String message) {
+  Flushbar flush;
+  flush = Flushbar(
+    margin: EdgeInsets.all(8),
+    borderRadius: 8,
+    title: 'Sorry!',
+    message: ReCase(message).titleCase,
+    backgroundColor: Colors.red[700],
+    duration: Duration(seconds: 3),
+    isDismissible: true,
+    mainButton: FlatButton(
+      child: Icon(CupertinoIcons.clear_thick, color: Colors.white),
+      onPressed: () => flush.dismiss(),
+    ),
+  )..show(context);
+  return flush;
 }

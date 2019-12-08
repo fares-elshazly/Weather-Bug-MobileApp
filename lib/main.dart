@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:device_preview/device_preview.dart';
+import 'package:weather_bug/Screens/Loading_Screen.dart';
 import 'Screens/Search_Screen.dart';
 import 'Screens/Weather_Screen.dart';
 
@@ -22,7 +23,12 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.orange,
       ),
-      home: WeatherScreen(),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => SearchScreen(),
+        '/ShowWeather': (context) => WeatherScreen(),
+        '/Loading': (context) => LoadingScreen(),
+      },
     );
   }
 }
