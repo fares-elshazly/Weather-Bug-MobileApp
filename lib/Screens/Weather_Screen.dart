@@ -1,14 +1,27 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:weather_icons/weather_icons.dart';
+import 'package:intl/intl.dart';
+import 'package:recase/recase.dart';
+import 'package:weather_bug/Models/Weather_Models/Weather_Model.dart';
+import 'package:weather_bug/Utilities/Weather_Utilities.dart';
 
 class WeatherScreenData extends InheritedWidget {
-  final Widget child;
+  final Weather weather;
+  final date;
+  final time;
+  final child;
   final height;
   final width;
   final backArrowIcon;
   WeatherScreenData(
-      {Key key, this.child, this.height, this.width, this.backArrowIcon})
+      {Key key,
+      this.weather,
+      this.date,
+      this.time,
+      this.child,
+      this.height,
+      this.width,
+      this.backArrowIcon})
       : super(key: key, child: child);
 
   static WeatherScreenData of(BuildContext context) {
@@ -31,6 +44,10 @@ class WeatherScreen extends StatelessWidget {
       backArrowIcon: IconData(0xf3d5,
           fontFamily: CupertinoIcons.iconFont,
           fontPackage: CupertinoIcons.iconFontPackage),
+      weather: ModalRoute.of(context).settings.arguments,
+      date:
+          DateFormat.yMMMMEEEEd("en_US").format(new DateTime.now()).toString(),
+      time: DateFormat.jm().format(new DateTime.now()).toString(),
       child: WeatherScreenWidget(),
     );
   }
@@ -48,6 +65,7 @@ class WeatherScreenWidget extends StatelessWidget {
 }
 
 Widget buildBody(BuildContext context) {
+  final weather = WeatherScreenData.of(context).weather;
   return DecoratedBox(
     decoration: BoxDecoration(
       image: DecorationImage(
@@ -63,16 +81,20 @@ Widget buildBody(BuildContext context) {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
           SizedBox(height: WeatherScreenData.of(context).height * 0.05),
-          buildLocation('San Francisco, California, US'),
+          buildLocation('${weather.name}, ${weather.sys.country}'),
           SizedBox(height: WeatherScreenData.of(context).height * 0.2),
-          buildTemperature(10),
-          buildCondition('Partly Cloudy'),
+          buildTemperature(weather.main.temp.round()),
+          buildCondition(ReCase('${weather.weather[0].description}').titleCase),
           SizedBox(height: WeatherScreenData.of(context).height * 0.02),
-          buildDate('10:00 AM - Monday, November 11, 2019'),
+          buildDate(
+              '${WeatherScreenData.of(context).time} - ${WeatherScreenData.of(context).date}'),
           SizedBox(height: WeatherScreenData.of(context).height * 0.04),
-          buildConditionIcon(WeatherIcons.day_cloudy),
+          buildConditionIcon(WeatherUtilities.getWeatherIcon(
+              weather.weather[0].main,
+              weather.weather[0].icon[weather.weather[0].icon.length - 1])),
           SizedBox(height: WeatherScreenData.of(context).height * 0.04),
-          buildConditionData(88, 0, 2),
+          buildConditionData(weather.main.humidity, weather.main.pressure,
+              weather.wind.speed.round()),
         ],
       ),
     ),
@@ -127,12 +149,12 @@ Widget buildConditionData(int humidity, int precipitation, int wind) {
       ),
       Column(
         children: <Widget>[
-          Text('Precipitation',
+          Text('Pressure',
               style: TextStyle(
                   color: Colors.white70,
                   fontSize: 15,
                   fontFamily: 'AvenirRegular')),
-          Text('$precipitation%',
+          Text('$precipitation Mb',
               style: TextStyle(
                   color: Colors.white,
                   fontSize: 15,
