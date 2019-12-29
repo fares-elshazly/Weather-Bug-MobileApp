@@ -64,9 +64,7 @@ class WeatherUtilities {
         return WeatherIcons.tornado;
         break;
       default:
-        return dayOrNight == 'd'
-            ? WeatherIcons.cloud_refresh
-            : WeatherIcons.cloud_refresh;
+        return WeatherIcons.cloud_refresh;
     }
   }
 }

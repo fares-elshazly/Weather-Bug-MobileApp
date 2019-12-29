@@ -4,7 +4,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:recase/recase.dart';
 import 'package:weather_bug/Blocs/Weather_Bloc/Bloc.dart';
+import 'package:weather_bug/Models/City_Model.dart';
 import 'package:weather_bug/Screens/Loading_Screen.dart';
+import 'package:weather_bug/Utilities/Shared_Preference_Utilities.dart';
 
 class SearchScreenData extends InheritedWidget {
   final child;
@@ -13,6 +15,7 @@ class SearchScreenData extends InheritedWidget {
   final pageController;
   final searchController;
   final earthIcon;
+  final SharedPreferenceUtilities sharedPreferenceUtilities;
   final ValueNotifier<Color> locationsColor;
   final ValueNotifier<Color> settingsColor;
   SearchScreenData(
@@ -23,6 +26,7 @@ class SearchScreenData extends InheritedWidget {
       this.pageController,
       this.searchController,
       this.earthIcon,
+      this.sharedPreferenceUtilities,
       this.locationsColor,
       this.settingsColor})
       : super(key: key, child: child);
@@ -38,7 +42,12 @@ class SearchScreenData extends InheritedWidget {
   }
 }
 
-class SearchScreen extends StatelessWidget {
+class SearchScreen extends StatefulWidget {
+  @override
+  _SearchScreenState createState() => _SearchScreenState();
+}
+
+class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
@@ -51,11 +60,18 @@ class SearchScreen extends StatelessWidget {
         earthIcon: IconData(0xf38c,
             fontFamily: CupertinoIcons.iconFont,
             fontPackage: CupertinoIcons.iconFontPackage),
+        sharedPreferenceUtilities: SharedPreferenceUtilities(),
         locationsColor: ValueNotifier(Colors.orange),
         settingsColor: ValueNotifier(Colors.black87),
         child: SearchScreenWidget(),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    BlocProvider.of<WeatherBloc>(context).close();
+    super.dispose();
   }
 }
 
@@ -67,7 +83,8 @@ class SearchScreenWidget extends StatelessWidget {
       body: BlocListener<WeatherBloc, WeatherState>(
         listener: (context, state) {
           if (state is LoadedWeatherState) {
-            Navigator.pushNamed(context, '/ShowWeather', arguments: state.weather);
+            Navigator.pushNamed(context, '/ShowWeather',
+                arguments: state.weather);
           } else if (state is ErrorWeatherState) {
             buildFlushBar(context, state.error);
           }
@@ -86,7 +103,7 @@ class SearchScreenWidget extends StatelessWidget {
         shape: CircularNotchedRectangle(),
         child: buildBottomAppBar(context),
       ),
-      floatingActionButton: buildFAB(),
+      floatingActionButton: buildFAB(context),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
@@ -115,17 +132,7 @@ Widget buildLocationsPage(BuildContext context) {
           buildRoundedTextField(context, 'Search', Icons.search),
           SizedBox(height: SearchScreenData.of(context).height * 0.04),
           Expanded(
-            child: buildListView('Recently Searched', [
-              'Alexandria',
-              'Miami',
-              'Las Vegas',
-              'Alexandria',
-              'Miami',
-              'Las Vegas',
-              'Alexandria',
-              'Miami',
-              'Las Vegas'
-            ]),
+            child: buildListView(context, 'Recently Searched'),
           ),
         ],
       ),
@@ -150,17 +157,16 @@ Widget buildTitle(BuildContext context, String title) {
 
 Widget buildRoundedTextField(
     BuildContext context, String hint, IconData preIcon) {
-  final weatherBloc = BlocProvider.of<WeatherBloc>(context);
   return Container(
     height: 55,
     child: TextField(
       controller: SearchScreenData.of(context).searchController,
       decoration: InputDecoration(
           border: InputBorder.none, prefixIcon: Icon(preIcon), labelText: hint),
-      onSubmitted: (v) {
+      onSubmitted: (v) async {
         if (v.isNotEmpty) {
-          weatherBloc.add(GetWeather(city: v));
-          print('Searching For $v ...');
+          SearchScreenData.of(context).sharedPreferenceUtilities.addCity(City(name: v, imageURL: 'https://cdn.vox-cdn.com/thumbor/Z7C9NrmCrdHZ0p6JaxsjCBCFTtg=/0x0:3840x5760/1200x675/filters:focal(1613x2573:2227x3187)/cdn.vox-cdn.com/uploads/chorus_image/image/56185263/muzammil_soorma_797975_unsplash.6.jpg'));
+          BlocProvider.of<WeatherBloc>(context).add(GetWeather(city: v));
         }
       },
     ),
@@ -170,7 +176,7 @@ Widget buildRoundedTextField(
   );
 }
 
-Widget buildListView(String title, List<String> places) {
+Widget buildListView(BuildContext context, String title) {
   return Column(
     mainAxisAlignment: MainAxisAlignment.start,
     crossAxisAlignment: CrossAxisAlignment.start,
@@ -178,30 +184,40 @@ Widget buildListView(String title, List<String> places) {
       Text(title,
           style: TextStyle(
               fontSize: 13, fontFamily: 'AvenirRegular', color: Colors.grey)),
-      Expanded(
-        child: ListView.builder(
-          padding: EdgeInsets.zero,
-          itemCount: places.length,
-          itemBuilder: (context, index) {
-            return Container(
-                height: 100,
-                margin: EdgeInsets.only(top: 8, bottom: 8),
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(15),
-                    image: DecorationImage(
-                        image: NetworkImage(
-                            'https://cdn.vox-cdn.com/thumbor/Z7C9NrmCrdHZ0p6JaxsjCBCFTtg=/0x0:3840x5760/1200x675/filters:focal(1613x2573:2227x3187)/cdn.vox-cdn.com/uploads/chorus_image/image/56185263/muzammil_soorma_797975_unsplash.6.jpg'),
-                        fit: BoxFit.fill)),
-                child: Center(
-                    child: Text(
-                  places[index],
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontFamily: 'AvenirMed',
-                      fontSize: 18),
-                )));
-          },
-        ),
+      FutureBuilder(
+        initialData: List<City>(),
+        future:
+            SearchScreenData.of(context).sharedPreferenceUtilities.getCities(),
+        builder: (BuildContext context, AsyncSnapshot snapshot) {
+          return Expanded(
+            child: ListView.builder(
+              padding: EdgeInsets.zero,
+              itemCount: snapshot.data.length,
+              itemBuilder: (context, index) {
+                return Container(
+                    height: SearchScreenData.of(context).height * 0.15,
+                    margin: index == snapshot.data.length - 1
+                        ? EdgeInsets.only(
+                            top: 8,
+                            bottom: SearchScreenData.of(context).height * 0.15)
+                        : EdgeInsets.only(top: 8, bottom: 8),
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(15),
+                        image: DecorationImage(
+                            image: NetworkImage(snapshot.data[index].imageURL),
+                            fit: BoxFit.fill)),
+                    child: Center(
+                        child: Text(
+                      snapshot.data[index].name,
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontFamily: 'AvenirMed',
+                          fontSize: 18),
+                    )));
+              },
+            ),
+          );
+        },
       ),
     ],
   );
@@ -257,11 +273,11 @@ Widget buildBottomAppBar(BuildContext context) {
   );
 }
 
-Widget buildFAB() {
+Widget buildFAB(BuildContext context) {
   return FloatingActionButton(
     child: Icon(Icons.my_location, color: Colors.white, size: 35),
     tooltip: 'Get My Location',
-    onPressed: () {},
+    onPressed: () => SearchScreenData.of(context).sharedPreferenceUtilities.clear(),
   );
 }
 
