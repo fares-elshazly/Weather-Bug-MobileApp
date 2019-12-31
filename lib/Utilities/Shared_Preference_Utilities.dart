@@ -16,7 +16,7 @@ class SharedPreferenceUtilities {
     }
     if(cities.length == 0)
       cities.add(city);
-    else if(cities.elementAt(0) != city)
+    else if(cities.elementAt(0).name != city.name)
       cities.insert(0, city);
     if(cities.length == 6)
       cities.removeLast();
