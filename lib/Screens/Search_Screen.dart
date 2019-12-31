@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
@@ -5,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:recase/recase.dart';
 import 'package:weather_bug/Blocs/Weather_Bloc/Bloc.dart';
 import 'package:weather_bug/Models/City_Model.dart';
+import 'package:weather_bug/Models/WeatherScreenArgs_Model.dart';
 import 'package:weather_bug/Screens/Loading_Screen.dart';
 import 'package:weather_bug/Utilities/Shared_Preference_Utilities.dart';
 
@@ -32,8 +34,7 @@ class SearchScreenData extends InheritedWidget {
       : super(key: key, child: child);
 
   static SearchScreenData of(BuildContext context) {
-    return (context.inheritFromWidgetOfExactType(SearchScreenData)
-        as SearchScreenData);
+    return context.dependOnInheritedWidgetOfExactType<SearchScreenData>();
   }
 
   @override
@@ -83,8 +84,12 @@ class SearchScreenWidget extends StatelessWidget {
       body: BlocListener<WeatherBloc, WeatherState>(
         listener: (context, state) {
           if (state is LoadedWeatherState) {
+            SearchScreenData.of(context).sharedPreferenceUtilities.addCity(City(
+                name: state.weather.name,
+                imageURL: state.photos.photos[0].src.original));
             Navigator.pushNamed(context, '/ShowWeather',
-                arguments: state.weather);
+                arguments: WeatherScreenArgs(
+                    weather: state.weather, photos: state.photos));
           } else if (state is ErrorWeatherState) {
             buildFlushBar(context, state.error);
           }
@@ -165,7 +170,6 @@ Widget buildRoundedTextField(
           border: InputBorder.none, prefixIcon: Icon(preIcon), labelText: hint),
       onSubmitted: (v) async {
         if (v.isNotEmpty) {
-          SearchScreenData.of(context).sharedPreferenceUtilities.addCity(City(name: v, imageURL: 'https://cdn.vox-cdn.com/thumbor/Z7C9NrmCrdHZ0p6JaxsjCBCFTtg=/0x0:3840x5760/1200x675/filters:focal(1613x2573:2227x3187)/cdn.vox-cdn.com/uploads/chorus_image/image/56185263/muzammil_soorma_797975_unsplash.6.jpg'));
           BlocProvider.of<WeatherBloc>(context).add(GetWeather(city: v));
         }
       },
@@ -194,26 +198,31 @@ Widget buildListView(BuildContext context, String title) {
               padding: EdgeInsets.zero,
               itemCount: snapshot.data.length,
               itemBuilder: (context, index) {
-                return Container(
-                    height: SearchScreenData.of(context).height * 0.15,
-                    margin: index == snapshot.data.length - 1
-                        ? EdgeInsets.only(
-                            top: 8,
-                            bottom: SearchScreenData.of(context).height * 0.15)
-                        : EdgeInsets.only(top: 8, bottom: 8),
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(15),
-                        image: DecorationImage(
-                            image: NetworkImage(snapshot.data[index].imageURL),
-                            fit: BoxFit.fill)),
-                    child: Center(
-                        child: Text(
-                      snapshot.data[index].name,
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontFamily: 'AvenirMed',
-                          fontSize: 18),
-                    )));
+                return GestureDetector(
+                  child: Container(
+                      height: SearchScreenData.of(context).height * 0.15,
+                      margin: index == snapshot.data.length - 1
+                          ? EdgeInsets.only(
+                              top: 8,
+                              bottom:
+                                  SearchScreenData.of(context).height * 0.15)
+                          : EdgeInsets.only(top: 8, bottom: 8),
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(15),
+                          image: DecorationImage(
+                              image: CachedNetworkImageProvider(snapshot.data[index].imageURL),
+                              fit: BoxFit.cover)),
+                      child: Center(
+                          child: Text(
+                        snapshot.data[index].name,
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontFamily: 'AvenirMed',
+                            fontSize: 18),
+                      ))),
+                  onTap: () => BlocProvider.of<WeatherBloc>(context)
+                      .add(GetWeather(city: snapshot.data[index].name)),
+                );
               },
             ),
           );
@@ -277,7 +286,8 @@ Widget buildFAB(BuildContext context) {
   return FloatingActionButton(
     child: Icon(Icons.my_location, color: Colors.white, size: 35),
     tooltip: 'Get My Location',
-    onPressed: () => SearchScreenData.of(context).sharedPreferenceUtilities.clear(),
+    onPressed: () =>
+        SearchScreenData.of(context).sharedPreferenceUtilities.clear(),
   );
 }
 

@@ -1,12 +1,16 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:recase/recase.dart';
+import 'package:weather_bug/Models/Pexels_Models/Pexels_Model.dart';
+import 'package:weather_bug/Models/WeatherScreenArgs_Model.dart';
 import 'package:weather_bug/Models/Weather_Models/Weather_Model.dart';
 import 'package:weather_bug/Utilities/Weather_Utilities.dart';
 
 class WeatherScreenData extends InheritedWidget {
   final Weather weather;
+  final Pexels photos;
   final date;
   final time;
   final child;
@@ -16,6 +20,7 @@ class WeatherScreenData extends InheritedWidget {
   WeatherScreenData(
       {Key key,
       this.weather,
+      this.photos,
       this.date,
       this.time,
       this.child,
@@ -25,8 +30,7 @@ class WeatherScreenData extends InheritedWidget {
       : super(key: key, child: child);
 
   static WeatherScreenData of(BuildContext context) {
-    return (context.inheritFromWidgetOfExactType(WeatherScreenData)
-        as WeatherScreenData);
+    return context.dependOnInheritedWidgetOfExactType<WeatherScreenData>();
   }
 
   @override
@@ -38,13 +42,15 @@ class WeatherScreenData extends InheritedWidget {
 class WeatherScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    WeatherScreenArgs args = ModalRoute.of(context).settings.arguments;
     return WeatherScreenData(
       height: MediaQuery.of(context).size.height,
       width: MediaQuery.of(context).size.width,
       backArrowIcon: IconData(0xf3d5,
           fontFamily: CupertinoIcons.iconFont,
           fontPackage: CupertinoIcons.iconFontPackage),
-      weather: ModalRoute.of(context).settings.arguments,
+      weather: args.weather,
+      photos: args.photos,
       date:
           DateFormat.yMMMMEEEEd("en_US").format(new DateTime.now()).toString(),
       time: DateFormat.jm().format(new DateTime.now()).toString(),
@@ -66,12 +72,12 @@ class WeatherScreenWidget extends StatelessWidget {
 
 Widget buildBody(BuildContext context) {
   final weather = WeatherScreenData.of(context).weather;
+  final photos = WeatherScreenData.of(context).photos;
   return DecoratedBox(
     decoration: BoxDecoration(
       image: DecorationImage(
-          image: NetworkImage(
-              'https://images.unsplash.com/photo-1534050359320-02900022671e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1400&q=80'),
-          fit: BoxFit.cover,
+        image: CachedNetworkImageProvider(photos.photos[0].src.original),
+        fit: BoxFit.cover,
           colorFilter: ColorFilter.mode(
               Colors.black.withOpacity(0.3), BlendMode.darken)),
     ),
