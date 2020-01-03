@@ -3,11 +3,13 @@ import 'package:flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:geocoder/model.dart';
 import 'package:recase/recase.dart';
 import 'package:weather_bug/Blocs/Weather_Bloc/Bloc.dart';
 import 'package:weather_bug/Models/City_Model.dart';
 import 'package:weather_bug/Models/WeatherScreenArgs_Model.dart';
 import 'package:weather_bug/Screens/Loading_Screen.dart';
+import 'package:weather_bug/Services/Location_Service.dart';
 import 'package:weather_bug/Utilities/Shared_Preference_Utilities.dart';
 
 class SearchScreenData extends InheritedWidget {
@@ -234,7 +236,7 @@ Widget buildListView(BuildContext context, String title) {
 
 Widget buildBottomAppBar(BuildContext context) {
   return Container(
-    height: SearchScreenData.of(context).height * 0.1,
+    height: SearchScreenData.of(context).height * 0.09,
     child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: <Widget>[
@@ -286,8 +288,11 @@ Widget buildFAB(BuildContext context) {
   return FloatingActionButton(
     child: Icon(Icons.my_location, color: Colors.white, size: 35),
     tooltip: 'Get My Location',
-    onPressed: () =>
-        SearchScreenData.of(context).sharedPreferenceUtilities.clear(),
+    onPressed: () async {
+      Address address = await LocationRepository.getLocation();
+      String city = LocationRepository.getCityName(address);
+      BlocProvider.of<WeatherBloc>(context).add(GetWeather(city: city));
+    },
   );
 }
 
