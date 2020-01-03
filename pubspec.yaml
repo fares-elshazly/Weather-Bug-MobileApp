@@ -30,6 +30,8 @@ dependencies:
   intl: ^0.16.0
   flushbar: ^1.9.1
   cached_network_image: ^2.0.0
+  location: ^2.3.5
+  geocoder: ^0.2.1
 
 dev_dependencies:
   flutter_test:
