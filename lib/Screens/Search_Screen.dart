@@ -19,7 +19,7 @@ class SearchScreenData extends InheritedWidget {
   final pageController;
   final searchController;
   final earthIcon;
-  final SharedPreferenceUtilities sharedPreferenceUtilities;
+  final sharedPreferenceUtilities;
   final ValueNotifier<Color> locationsColor;
   final ValueNotifier<Color> settingsColor;
   SearchScreenData(
@@ -64,7 +64,7 @@ class _SearchScreenState extends State<SearchScreen> {
             fontFamily: CupertinoIcons.iconFont,
             fontPackage: CupertinoIcons.iconFontPackage),
         sharedPreferenceUtilities: SharedPreferenceUtilities(),
-        locationsColor: ValueNotifier(Colors.orange),
+        locationsColor: ValueNotifier(Theme.of(context).primaryColor),
         settingsColor: ValueNotifier(Colors.black87),
         child: SearchScreenWidget(),
       ),
@@ -119,6 +119,12 @@ class SearchScreenWidget extends StatelessWidget {
 Widget buildBody(BuildContext context) {
   return PageView(
     controller: SearchScreenData.of(context).pageController,
+    onPageChanged: (page) {
+      final tmp = SearchScreenData.of(context).locationsColor.value;
+      SearchScreenData.of(context).locationsColor.value =
+          SearchScreenData.of(context).settingsColor.value;
+      SearchScreenData.of(context).settingsColor.value = tmp;
+    },
     children: <Widget>[
       buildLocationsPage(context),
       Center(child: Text('Settings Page!'))
@@ -170,9 +176,9 @@ Widget buildRoundedTextField(
       controller: SearchScreenData.of(context).searchController,
       decoration: InputDecoration(
           border: InputBorder.none, prefixIcon: Icon(preIcon), labelText: hint),
-      onSubmitted: (v) async {
-        if (v.isNotEmpty) {
-          BlocProvider.of<WeatherBloc>(context).add(GetWeather(city: v));
+      onSubmitted: (text) async {
+        if (text.isNotEmpty) {
+          BlocProvider.of<WeatherBloc>(context).add(GetWeather(cityName: text));
         }
       },
     ),
@@ -212,7 +218,8 @@ Widget buildListView(BuildContext context, String title) {
                       decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(15),
                           image: DecorationImage(
-                              image: CachedNetworkImageProvider(snapshot.data[index].imageURL),
+                              image: CachedNetworkImageProvider(
+                                  snapshot.data[index].imageURL),
                               fit: BoxFit.cover)),
                       child: Center(
                           child: Text(
@@ -223,7 +230,7 @@ Widget buildListView(BuildContext context, String title) {
                             fontSize: 18),
                       ))),
                   onTap: () => BlocProvider.of<WeatherBloc>(context)
-                      .add(GetWeather(city: snapshot.data[index].name)),
+                      .add(GetWeather(cityName: snapshot.data[index].name)),
                 );
               },
             ),
@@ -254,11 +261,8 @@ Widget buildBottomAppBar(BuildContext context) {
               );
             },
           ),
-          onPressed: () {
-            SearchScreenData.of(context).locationsColor.value = Colors.orange;
-            SearchScreenData.of(context).settingsColor.value = Colors.black87;
-            SearchScreenData.of(context).pageController.jumpToPage(0);
-          },
+          onPressed: () =>
+              SearchScreenData.of(context).pageController.jumpToPage(0),
         ),
         FlatButton(
           child: ValueListenableBuilder(
@@ -273,11 +277,8 @@ Widget buildBottomAppBar(BuildContext context) {
               );
             },
           ),
-          onPressed: () {
-            SearchScreenData.of(context).locationsColor.value = Colors.black87;
-            SearchScreenData.of(context).settingsColor.value = Colors.orange;
-            SearchScreenData.of(context).pageController.jumpToPage(1);
-          },
+          onPressed: () =>
+              SearchScreenData.of(context).pageController.jumpToPage(1),
         ),
       ],
     ),
@@ -291,7 +292,7 @@ Widget buildFAB(BuildContext context) {
     onPressed: () async {
       Address address = await LocationRepository.getLocation();
       String city = LocationRepository.getCityName(address);
-      BlocProvider.of<WeatherBloc>(context).add(GetWeather(city: city));
+      BlocProvider.of<WeatherBloc>(context).add(GetWeather(cityName: city));
     },
   );
 }

@@ -18,8 +18,8 @@ class WeatherBloc extends Bloc<WeatherEvent, WeatherState> {
     if (event is GetWeather) {
       yield LoadingWeatherState();
       try {
-        final weather = await weatherService.getWeather(event.city);
-        final photos = await photoService.getPhotos(event.city);
+        final weather = await weatherService.getWeather(event.cityName);
+        final photos = await photoService.getPhotos(event.cityName);
         yield LoadedWeatherState(weather: weather, photos: photos);
       } on TimeoutException catch (_) {
         yield ErrorWeatherState(error: 'Please Check Your Internet Connection!');
