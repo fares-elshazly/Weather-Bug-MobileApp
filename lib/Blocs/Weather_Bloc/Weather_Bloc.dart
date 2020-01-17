@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:weather_bug/Services/City_Service.dart';
 import 'package:weather_bug/Services/Weather_Service.dart';
-import './bloc.dart';
+import './Bloc.dart';
 
 class WeatherBloc extends Bloc<WeatherEvent, WeatherState> {
   WeatherRepository weatherService = WeatherRepository();
