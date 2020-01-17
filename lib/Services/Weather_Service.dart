@@ -14,7 +14,7 @@ class WeatherRepository {
         .timeout(Duration(seconds: 5));
     try {
       return Weather.fromJson(json.decode(response.body));
-    } catch (_) {
+    } catch (e) {
       throw Exception();
     }
   }

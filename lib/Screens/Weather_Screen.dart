@@ -9,21 +9,20 @@ import 'package:weather_bug/Models/Weather_Models/Weather_Model.dart';
 import 'package:weather_bug/Utilities/Weather_Utilities.dart';
 
 class WeatherScreenData extends InheritedWidget {
-  final Weather weather;
-  final Pexels photos;
+  final weather;
+  final photos;
   final date;
   final time;
-  final child;
   final height;
   final width;
   final backArrowIcon;
   WeatherScreenData(
       {Key key,
+      Widget child,
       this.weather,
       this.photos,
       this.date,
       this.time,
-      this.child,
       this.height,
       this.width,
       this.backArrowIcon})
