@@ -46,23 +46,21 @@ class SearchScreen extends StatelessWidget {
 class SearchScreenWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Container(
-          width: SearchScreenData.of(context).width * 0.9,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              SizedBox(height: SearchScreenData.of(context).height * 0.04),
-              buildTitle(context, 'Locations'),
-              SizedBox(height: SearchScreenData.of(context).height * 0.04),
-              buildRoundedTextField(context, 'Search', Icons.search),
-              SizedBox(height: SearchScreenData.of(context).height * 0.04),
-              Expanded(
-                child: buildListView(context, 'Recently Searched'),
-              ),
-            ],
-          ),
+    return Center(
+      child: Container(
+        width: SearchScreenData.of(context).width * 0.9,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            SizedBox(height: SearchScreenData.of(context).height * 0.04),
+            buildTitle(context, 'Locations'),
+            SizedBox(height: SearchScreenData.of(context).height * 0.04),
+            buildRoundedTextField(context, 'Search', Icons.search),
+            SizedBox(height: SearchScreenData.of(context).height * 0.04),
+            Expanded(
+              child: buildListView(context, 'Recently Searched'),
+            ),
+          ],
         ),
       ),
     );
@@ -75,7 +73,7 @@ Widget buildTitle(BuildContext context, String title) {
     children: <Widget>[
       Text(title, style: TextStyle(fontSize: 25, fontFamily: 'AvenirDemi')),
       Divider(
-        color: Color.fromARGB(255, 255, 160, 14),
+        color: Theme.of(context).primaryColor,
         thickness: 5,
         indent: 2,
         endIndent: SearchScreenData.of(context).width * 0.8,
@@ -122,37 +120,38 @@ Widget buildListView(BuildContext context, String title) {
               padding: EdgeInsets.zero,
               itemCount: snapshot.data.length,
               itemBuilder: (context, index) {
-                return GestureDetector(
-                  child: Container(
-                      height: SearchScreenData.of(context).height * 0.15,
-                      margin: index == snapshot.data.length - 1
-                          ? EdgeInsets.only(
-                              top: 8,
-                              bottom:
-                                  SearchScreenData.of(context).height * 0.15)
-                          : EdgeInsets.only(top: 8, bottom: 8),
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(15),
-                          image: DecorationImage(
-                              image: CachedNetworkImageProvider(
-                                  snapshot.data[index].imageURL),
-                              fit: BoxFit.cover)),
-                      child: Center(
-                          child: Text(
-                        snapshot.data[index].name,
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontFamily: 'AvenirMed',
-                            fontSize: 18),
-                      ))),
-                  onTap: () => BlocProvider.of<WeatherBloc>(context)
-                      .add(GetWeather(cityName: snapshot.data[index].name)),
-                );
+                return buildListViewUnit(context, index, snapshot);
               },
             ),
           );
         },
       ),
     ],
+  );
+}
+
+Widget buildListViewUnit(
+    BuildContext context, int index, AsyncSnapshot snapshot) {
+  return GestureDetector(
+    child: Container(
+        height: SearchScreenData.of(context).height * 0.15,
+        margin: index == snapshot.data.length - 1
+            ? EdgeInsets.only(
+                top: 8, bottom: SearchScreenData.of(context).height * 0.15)
+            : EdgeInsets.only(top: 8, bottom: 8),
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(15),
+            image: DecorationImage(
+                image:
+                    CachedNetworkImageProvider(snapshot.data[index].imageURL),
+                fit: BoxFit.cover)),
+        child: Center(
+            child: Text(
+          snapshot.data[index].name,
+          style: TextStyle(
+              color: Colors.white, fontFamily: 'AvenirMed', fontSize: 18),
+        ))),
+    onTap: () => BlocProvider.of<WeatherBloc>(context)
+        .add(GetWeather(cityName: snapshot.data[index].name)),
   );
 }

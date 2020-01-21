@@ -7,7 +7,7 @@ abstract class NavbarState extends Equatable {
 
 class InitialNavbarState extends NavbarState {
   @override
-  List<Object> get props => [];
+  List<Object> get props => null;
 }
 
 class SwapColors extends NavbarState {

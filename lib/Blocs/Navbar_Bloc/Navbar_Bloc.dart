@@ -10,8 +10,14 @@ class NavbarBloc extends Bloc<NavbarEvent, NavbarState> {
   Stream<NavbarState> mapEventToState(
     NavbarEvent event,
   ) async* {
-    if(event is Swipe) {
-      yield SwapColors(locationsColor: event.settingsColor, settingsColor: event.locationsColor);
+    if (event is Swipe) {
+      yield SwapColors(
+          locationsColor: event.settingsColor,
+          settingsColor: event.locationsColor);
+    }
+    else {
+      print('Yield');
+      yield InitialNavbarState();
     }
   }
 }
