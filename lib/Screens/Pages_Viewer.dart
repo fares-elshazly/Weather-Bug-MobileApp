@@ -9,11 +9,12 @@ import 'package:weather_bug/Blocs/Weather_Bloc/Bloc.dart';
 import 'package:weather_bug/Models/City_Model.dart';
 import 'package:weather_bug/Models/WeatherScreenArgs_Model.dart';
 import 'package:weather_bug/Screens/Search_Screen.dart';
+import 'package:weather_bug/Screens/Settings_Screen.dart';
 import 'package:weather_bug/Services/Location_Service.dart';
 import 'package:weather_bug/Utilities/Shared_Preference_Utilities.dart';
 import 'Loading_Screen.dart';
 
-class PagesControllerData extends InheritedWidget {
+class PagesViewerData extends InheritedWidget {
   final height;
   final width;
   final pageController;
@@ -23,7 +24,7 @@ class PagesControllerData extends InheritedWidget {
   Color locationsColor;
   Color settingsColor;
 
-  PagesControllerData(
+  PagesViewerData(
       {Key key,
       Widget child,
       this.height,
@@ -36,17 +37,17 @@ class PagesControllerData extends InheritedWidget {
       this.settingsColor})
       : super(key: key, child: child);
 
-  static PagesControllerData of(BuildContext context) {
-    return context.dependOnInheritedWidgetOfExactType<PagesControllerData>();
+  static PagesViewerData of(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<PagesViewerData>();
   }
 
   @override
-  bool updateShouldNotify(PagesControllerData oldWidget) {
+  bool updateShouldNotify(PagesViewerData oldWidget) {
     return true;
   }
 }
 
-class PagesController extends StatelessWidget {
+class PagesViewer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
@@ -58,7 +59,7 @@ class PagesController extends StatelessWidget {
           create: (BuildContext context) => NavbarBloc(),
         ),
       ],
-      child: PagesControllerData(
+      child: PagesViewerData(
         height: MediaQuery.of(context).size.height,
         width: MediaQuery.of(context).size.width,
         pageController: PageController(initialPage: 0),
@@ -69,13 +70,13 @@ class PagesController extends StatelessWidget {
         gearIcon: CupertinoIcons.gear,
         locationsColor: Theme.of(context).primaryColor,
         settingsColor: Colors.black87,
-        child: PagesControllerWidget(),
+        child: PagesViewerWidget(),
       ),
     );
   }
 }
 
-class PagesControllerWidget extends StatelessWidget {
+class PagesViewerWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -83,10 +84,9 @@ class PagesControllerWidget extends StatelessWidget {
       body: BlocListener<WeatherBloc, WeatherState>(
         listener: (context, state) {
           if (state is LoadedWeatherState) {
-            PagesControllerData.of(context).sharedPreferenceUtilities.addCity(
-                City(
-                    name: state.weather.name,
-                    imageURL: state.photos.photos[0].src.original));
+            PagesViewerData.of(context).sharedPreferenceUtilities.addCity(City(
+                name: state.weather.name,
+                imageURL: state.photos.photos[0].src.original));
             Navigator.pushNamed(context, '/ShowWeather',
                 arguments: WeatherScreenArgs(
                     weather: state.weather, photos: state.photos));
@@ -100,16 +100,16 @@ class PagesControllerWidget extends StatelessWidget {
               return LoadingScreen();
             } else {
               return PageView(
-                controller: PagesControllerData.of(context).pageController,
+                controller: PagesViewerData.of(context).pageController,
                 onPageChanged: (page) => BlocProvider.of<NavbarBloc>(context)
                     .add(Swipe(
                         locationsColor:
-                            PagesControllerData.of(context).locationsColor,
+                            PagesViewerData.of(context).locationsColor,
                         settingsColor:
-                            PagesControllerData.of(context).settingsColor)),
+                            PagesViewerData.of(context).settingsColor)),
                 children: <Widget>[
                   SearchScreen(),
-                  Center(child: Text('Settings Page!'))
+                  SettingsScreen(),
                 ],
               );
             }
@@ -121,10 +121,14 @@ class PagesControllerWidget extends StatelessWidget {
         child: BlocBuilder<NavbarBloc, NavbarState>(
           builder: (context, state) {
             if (state is SwapColors) {
-              PagesControllerData.of(context).locationsColor =
-                  state.locationsColor;
-              PagesControllerData.of(context).settingsColor =
-                  state.settingsColor;
+              PagesViewerData.of(context).locationsColor = state.locationsColor;
+              PagesViewerData.of(context).settingsColor = state.settingsColor;
+              if (state.locationsColor != Theme.of(context).primaryColor &&
+                  state.settingsColor != Theme.of(context).primaryColor) {
+                PagesViewerData.of(context).locationsColor = Colors.black87;
+                PagesViewerData.of(context).settingsColor =
+                    Theme.of(context).primaryColor;
+              }
             }
             return buildBottomAppBar(context);
           },
@@ -138,7 +142,7 @@ class PagesControllerWidget extends StatelessWidget {
 
 Widget buildBottomAppBar(BuildContext context) {
   return Container(
-    height: PagesControllerData.of(context).height * 0.09,
+    height: PagesViewerData.of(context).height * 0.09,
     child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: <Widget>[
@@ -146,31 +150,29 @@ Widget buildBottomAppBar(BuildContext context) {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
-              Icon(PagesControllerData.of(context).earthIcon,
-                  size: 25,
-                  color: PagesControllerData.of(context).locationsColor),
+              Icon(PagesViewerData.of(context).earthIcon,
+                  size: 25, color: PagesViewerData.of(context).locationsColor),
               Text('Locations',
                   style: TextStyle(
-                      color: PagesControllerData.of(context).locationsColor)),
+                      color: PagesViewerData.of(context).locationsColor)),
             ],
           ),
           onPressed: () =>
-              PagesControllerData.of(context).pageController.jumpToPage(0),
+              PagesViewerData.of(context).pageController.jumpToPage(0),
         ),
         FlatButton(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
-              Icon(PagesControllerData.of(context).gearIcon,
-                  size: 25,
-                  color: PagesControllerData.of(context).settingsColor),
+              Icon(PagesViewerData.of(context).gearIcon,
+                  size: 25, color: PagesViewerData.of(context).settingsColor),
               Text('Settings',
                   style: TextStyle(
-                      color: PagesControllerData.of(context).settingsColor)),
+                      color: PagesViewerData.of(context).settingsColor)),
             ],
           ),
           onPressed: () =>
-              PagesControllerData.of(context).pageController.jumpToPage(1),
+              PagesViewerData.of(context).pageController.jumpToPage(1),
         ),
       ],
     ),
@@ -180,6 +182,7 @@ Widget buildBottomAppBar(BuildContext context) {
 Widget buildFAB(BuildContext context) {
   return FloatingActionButton(
     child: Icon(Icons.my_location, color: Colors.white, size: 35),
+    backgroundColor: Theme.of(context).primaryColor.withOpacity(0.8),
     tooltip: 'Get My Location',
     onPressed: () async {
       Address address = await LocationRepository.getLocation();
