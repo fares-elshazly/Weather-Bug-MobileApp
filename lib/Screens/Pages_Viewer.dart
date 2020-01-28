@@ -4,15 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geocoder/geocoder.dart';
 import 'package:recase/recase.dart';
-import 'package:weather_bug/Blocs/Navbar_Bloc/Bloc.dart';
-import 'package:weather_bug/Blocs/Weather_Bloc/Bloc.dart';
-import 'package:weather_bug/Models/City_Model.dart';
-import 'package:weather_bug/Models/WeatherScreenArgs_Model.dart';
-import 'package:weather_bug/Screens/Search_Screen.dart';
-import 'package:weather_bug/Screens/Settings_Screen.dart';
-import 'package:weather_bug/Services/Location_Service.dart';
-import 'package:weather_bug/Utilities/Shared_Preference_Utilities.dart';
+import 'Search_Screen.dart';
+import 'Settings_Screen.dart';
 import 'Loading_Screen.dart';
+import '../Blocs/Navbar_Bloc/Bloc.dart';
+import '../Blocs/Weather_Bloc/Bloc.dart';
+import '../Services/Location_Service.dart';
+import '../Utilities/Shared_Preference_Utilities.dart';
+import '../Models/City_Model.dart';
+import '../Models/WeatherScreenArgs_Model.dart';
 
 class PagesViewerData extends InheritedWidget {
   final height;

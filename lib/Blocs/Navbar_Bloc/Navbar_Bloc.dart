@@ -16,7 +16,6 @@ class NavbarBloc extends Bloc<NavbarEvent, NavbarState> {
           settingsColor: event.locationsColor);
     }
     else {
-      print('Yield');
       yield InitialNavbarState();
     }
   }

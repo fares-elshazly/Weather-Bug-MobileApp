@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:weather_bug/Blocs/Theme_Bloc/Bloc.dart';
-import 'package:weather_bug/Widgets/Color_Spinner.dart';
+import '../Blocs/Theme_Bloc/Bloc.dart';
+import '../Widgets/Color_Spinner.dart';
 
 class SplashScreen extends StatelessWidget {
   @override

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:weather_bug/Blocs/Theme_Bloc/Bloc.dart';
-import 'package:weather_bug/Utilities/Shared_Preference_Utilities.dart';
-import 'package:weather_bug/Widgets/Color_Picker/color/color_picker.dart';
+import '../Blocs/Theme_Bloc/Bloc.dart';
+import '../Utilities/Shared_Preference_Utilities.dart';
+import '../Widgets/Color_Picker/color/color_picker.dart';
 
 class SettingsScreenData extends InheritedWidget {
   final height;
