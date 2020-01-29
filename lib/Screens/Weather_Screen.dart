@@ -1,12 +1,10 @@
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:recase/recase.dart';
-import 'package:weather_bug/Models/Pexels_Models/Pexels_Model.dart';
-import 'package:weather_bug/Models/WeatherScreenArgs_Model.dart';
-import 'package:weather_bug/Models/Weather_Models/Weather_Model.dart';
-import 'package:weather_bug/Utilities/Weather_Utilities.dart';
+import '../Models/WeatherScreenArgs_Model.dart';
+import '../Utilities/Weather_Utilities.dart';
 
 class WeatherScreenData extends InheritedWidget {
   final weather;

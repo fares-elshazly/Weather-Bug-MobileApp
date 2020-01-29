@@ -1,10 +1,10 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:weather_bug/Blocs/Weather_Bloc/Bloc.dart';
-import 'package:weather_bug/Models/City_Model.dart';
-import 'package:weather_bug/Utilities/Shared_Preference_Utilities.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import '../Blocs/Weather_Bloc/Bloc.dart';
+import '../Models/City_Model.dart';
+import '../Utilities/Shared_Preference_Utilities.dart';
 
 class SearchScreenData extends InheritedWidget {
   final height;

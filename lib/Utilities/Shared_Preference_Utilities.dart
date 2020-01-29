@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:weather_bug/Models/City_Model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../Models/City_Model.dart';
 
 class SharedPreferenceUtilities {
   SharedPreferences _sharedPreferences;
