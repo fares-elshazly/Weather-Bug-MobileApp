@@ -10,7 +10,9 @@ class SplashScreen extends StatelessWidget {
       body: BlocListener<ThemeBloc, ThemeState>(
         listener: (context, state) {
           if (state is NewTheme) {
-            Navigator.pushReplacementNamed(context, '/PagesViewer');
+            Future.delayed(Duration(seconds: 2), () {
+              Navigator.pushReplacementNamed(context, '/PagesViewer');
+            });
           }
         },
         child: Scaffold(
