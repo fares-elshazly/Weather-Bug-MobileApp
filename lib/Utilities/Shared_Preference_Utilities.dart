@@ -45,6 +45,19 @@ class SharedPreferenceUtilities {
     return Colors.orange.value;
   }
 
+  Future<bool> getSettings(String key) async {
+    _sharedPreferences = await SharedPreferences.getInstance();
+    if(_sharedPreferences.containsKey(key))
+      return _sharedPreferences.getBool(key);
+    _sharedPreferences.setBool(key, false);
+    return _sharedPreferences.getBool(key);
+  }
+
+  setSettings(String key, bool value) async {
+    _sharedPreferences = await SharedPreferences.getInstance();
+    _sharedPreferences.setBool(key, value);
+  }
+
   clearHistory() async {
     _sharedPreferences = await SharedPreferences.getInstance();
     if(_sharedPreferences.containsKey('Cities'))

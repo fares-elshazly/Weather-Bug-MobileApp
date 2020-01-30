@@ -2,15 +2,16 @@ import 'package:flushbar/flushbar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geocoder/geocoder.dart';
 import 'package:recase/recase.dart';
+import '../main.dart';
 import 'Search_Screen.dart';
 import 'Settings_Screen.dart';
 import 'Loading_Screen.dart';
 import '../Blocs/Navbar_Bloc/Bloc.dart';
 import '../Blocs/Weather_Bloc/Bloc.dart';
 import '../Services/Location_Service.dart';
-import '../Utilities/Shared_Preference_Utilities.dart';
 import '../Models/City_Model.dart';
 import '../Models/WeatherScreenArgs_Model.dart';
 
@@ -18,7 +19,6 @@ class PagesViewerData extends InheritedWidget {
   final height;
   final width;
   final pageController;
-  final sharedPreferenceUtilities;
   final earthIcon;
   final gearIcon;
   Color locationsColor;
@@ -30,7 +30,6 @@ class PagesViewerData extends InheritedWidget {
       this.height,
       this.width,
       this.pageController,
-      this.sharedPreferenceUtilities,
       this.earthIcon,
       this.gearIcon,
       this.locationsColor,
@@ -63,7 +62,6 @@ class PagesViewer extends StatelessWidget {
         height: MediaQuery.of(context).size.height,
         width: MediaQuery.of(context).size.width,
         pageController: PageController(initialPage: 0),
-        sharedPreferenceUtilities: SharedPreferenceUtilities(),
         earthIcon: IconData(0xf38c,
             fontFamily: CupertinoIcons.iconFont,
             fontPackage: CupertinoIcons.iconFontPackage),
@@ -84,7 +82,7 @@ class PagesViewerWidget extends StatelessWidget {
       body: BlocListener<WeatherBloc, WeatherState>(
         listener: (context, state) {
           if (state is LoadedWeatherState) {
-            PagesViewerData.of(context).sharedPreferenceUtilities.addCity(City(
+            MyAppData.of(context).sharedPreferenceUtilities.addCity(City(
                 name: state.weather.name,
                 imageURL: state.photos.photos[0].src.original));
             Navigator.pushNamed(context, '/ShowWeather',
