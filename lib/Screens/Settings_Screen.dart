@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:weather_bug/main.dart';
 import '../Blocs/Theme_Bloc/Bloc.dart';
 import '../Utilities/Shared_Preference_Utilities.dart';
 import '../Widgets/Color_Picker/color/color_picker.dart';
@@ -7,12 +9,14 @@ import '../Widgets/Color_Picker/color/color_picker.dart';
 class SettingsScreenData extends InheritedWidget {
   final height;
   final width;
-  final sharedPreferenceUtilities;
-  bool popUps;
-  bool sound;
+  final flutterLocalNotificationsPlugin;
 
   SettingsScreenData(
-      {Key key, Widget child, this.height, this.width, this.sharedPreferenceUtilities, this.popUps, this.sound})
+      {Key key,
+      Widget child,
+      this.height,
+      this.width,
+      this.flutterLocalNotificationsPlugin})
       : super(key: key, child: child);
 
   static SettingsScreenData of(BuildContext context) {
@@ -31,9 +35,7 @@ class SettingsScreen extends StatelessWidget {
     return SettingsScreenData(
       height: MediaQuery.of(context).size.height,
       width: MediaQuery.of(context).size.width,
-      sharedPreferenceUtilities: SharedPreferenceUtilities(),
-      popUps: true,
-      sound: false,
+      flutterLocalNotificationsPlugin: FlutterLocalNotificationsPlugin(),
       child: SettingsScreenWidget(),
     );
   }
@@ -47,6 +49,7 @@ class SettingsScreenWidget extends StatefulWidget {
 class _SettingsScreenWidgetState extends State<SettingsScreenWidget> {
   @override
   Widget build(BuildContext context) {
+    initializeNotifications(context);
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -102,17 +105,26 @@ class _SettingsScreenWidgetState extends State<SettingsScreenWidget> {
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(5),
-                    child: Icon(Icons.stay_primary_portrait, color: Colors.white),
+                    child:
+                        Icon(Icons.stay_primary_portrait, color: Colors.white),
                   )),
               SizedBox(width: SettingsScreenData.of(context).width * 0.02),
               Text('Pop-Ups'),
             ],
           ),
           trailing: Switch(
-            value: SettingsScreenData.of(context).popUps,
+            value: MyAppData.of(context).popUps,
             onChanged: (value) {
+              value
+                  ? showNotification("Thank You!",
+                      "You've Now Subscribed To Our Our Weather Changes Notifications System")
+                  : showNotification("We're Sorry To Hear That!",
+                      "You've Unsubscribed From Our Weather Changes Notifications System");
               setState(() {
-                SettingsScreenData.of(context).popUps = value;
+                MyAppData.of(context).popUps = value;
+                MyAppData.of(context)
+                    .sharedPreferenceUtilities
+                    .setSettings('popUps', value);
               });
             },
           ),
@@ -134,10 +146,13 @@ class _SettingsScreenWidgetState extends State<SettingsScreenWidget> {
             ],
           ),
           trailing: Switch(
-            value: SettingsScreenData.of(context).sound,
+            value: MyAppData.of(context).sound,
             onChanged: (value) {
               setState(() {
-                SettingsScreenData.of(context).sound = value;
+                MyAppData.of(context).sound = value;
+                MyAppData.of(context)
+                    .sharedPreferenceUtilities
+                    .setSettings('sound', value);
               });
             },
           ),
@@ -153,7 +168,8 @@ class _SettingsScreenWidgetState extends State<SettingsScreenWidget> {
         color: Theme.of(context).primaryColor,
         child: Text('Clear Search History',
             style: TextStyle(color: Colors.white, fontFamily: 'AvenirRegular')),
-        onPressed: () => SettingsScreenData.of(context).sharedPreferenceUtilities.clearHistory(),
+        onPressed: () =>
+            MyAppData.of(context).sharedPreferenceUtilities.clearHistory(),
       ),
     );
   }
@@ -172,21 +188,33 @@ class _SettingsScreenWidgetState extends State<SettingsScreenWidget> {
       ),
     );
   }
+
+  initializeNotifications(BuildContext context) {
+    final initializationSettingsAndroid =
+        AndroidInitializationSettings('app_icon');
+    final initializationSettingsIOS = IOSInitializationSettings();
+    final initializationSettings = InitializationSettings(
+        initializationSettingsAndroid, initializationSettingsIOS);
+    SettingsScreenData.of(context).flutterLocalNotificationsPlugin.initialize(
+        initializationSettings,
+        onSelectNotification: onSelectNotification);
+  }
+
+  Future showNotification(String title, String body) async {
+    final androidPlatformChannelSpecifics = new AndroidNotificationDetails(
+        '1',
+        'Push Notification Subsrciption',
+        'Push Notification Subsrciption Status',
+        importance: Importance.Max,
+        priority: Priority.High);
+    final iOSPlatformChannelSpecifics = new IOSNotificationDetails();
+    final platformChannelSpecifics = new NotificationDetails(
+        androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+    await SettingsScreenData.of(context)
+        .flutterLocalNotificationsPlugin
+        .show(0, title, body, platformChannelSpecifics);
+  }
+
+  Future onSelectNotification(String payload) async =>
+      print('Notification Selected!');
 }
-
-// class SwitchButton extends StatefulWidget {
-//   final value;
-//   SwitchButton({Key key, this.value}) : super(key: key);
-
-//   @override
-//   _SwitchButtonState createState() => _SwitchButtonState();
-// }
-
-// class _SwitchButtonState extends State<SwitchButton> {
-//   @override
-//   Widget build(BuildContext context) {
-//     return Container(
-//       child: child,
-//     );
-//   }
-// }

@@ -5,19 +5,18 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../Blocs/Weather_Bloc/Bloc.dart';
 import '../Models/City_Model.dart';
 import '../Utilities/Shared_Preference_Utilities.dart';
+import '../main.dart';
 
 class SearchScreenData extends InheritedWidget {
   final height;
   final width;
   final searchController;
-  final sharedPreferenceUtilities;
   SearchScreenData(
       {Key key,
       Widget child,
       this.height,
       this.width,
-      this.searchController,
-      this.sharedPreferenceUtilities})
+      this.searchController})
       : super(key: key, child: child);
 
   static SearchScreenData of(BuildContext context) {
@@ -37,7 +36,6 @@ class SearchScreen extends StatelessWidget {
       height: MediaQuery.of(context).size.height,
       width: MediaQuery.of(context).size.width,
       searchController: TextEditingController(),
-      sharedPreferenceUtilities: SharedPreferenceUtilities(),
       child: SearchScreenWidget(),
     );
   }
@@ -52,7 +50,7 @@ class SearchScreenWidget extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            SizedBox(height: SearchScreenData.of(context).height * 0.04),
+            SizedBox(height: SearchScreenData.of(context).height * 0.06),
             buildTitle(context, 'Locations'),
             SizedBox(height: SearchScreenData.of(context).height * 0.04),
             buildRoundedTextField(context, 'Search', Icons.search),
@@ -113,7 +111,7 @@ Widget buildListView(BuildContext context, String title) {
       FutureBuilder(
         initialData: List<City>(),
         future:
-            SearchScreenData.of(context).sharedPreferenceUtilities.getCities(),
+            MyAppData.of(context).sharedPreferenceUtilities.getCities(),
         builder: (BuildContext context, AsyncSnapshot snapshot) {
           return Expanded(
             child: ListView.builder(

@@ -7,17 +7,47 @@ import 'Screens/Weather_Screen.dart';
 import 'Blocs/Theme_Bloc/Bloc.dart';
 import 'Utilities/Shared_Preference_Utilities.dart';
 
-// void main() => runApp(
-//   DevicePreview(
-//     builder: (context) => MyApp(),
-//   ),
-// );
-
 void main() => runApp(MyApp());
 
+class MyAppData extends InheritedWidget {
+  final sharedPreferenceUtilities;
+  ThemeData theme;
+  bool popUps;
+  bool sound;
+
+  MyAppData(
+      {Key key,
+      Widget child,
+      this.sharedPreferenceUtilities,
+      this.theme,
+      this.popUps,
+      this.sound})
+      : super(key: key, child: child);
+
+  static MyAppData of(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<MyAppData>();
+  }
+
+  @override
+  bool updateShouldNotify(MyAppData oldWidget) {
+    return true;
+  }
+}
+
 class MyApp extends StatelessWidget {
-  final sharedPreference = SharedPreferenceUtilities();
-  ThemeData theme = ThemeData(primaryColor: Colors.white);
+  @override
+  Widget build(BuildContext context) {
+    return MyAppData(
+      sharedPreferenceUtilities: SharedPreferenceUtilities(),
+      theme: ThemeData(primaryColor: Colors.white),
+      popUps: true,
+      sound: true,
+      child: MyAppWidget(),
+    );
+  }
+}
+
+class MyAppWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider<ThemeBloc>(
@@ -27,16 +57,18 @@ class MyApp extends StatelessWidget {
           if (state is InitialTheme) {
             loadTheme(context);
           } else if (state is NewTheme) {
-            theme = state.theme;
-            sharedPreference.addThemeColor(theme.primaryColor);
+            MyAppData.of(context).theme = state.theme;
+            MyAppData.of(context)
+                .sharedPreferenceUtilities
+                .addThemeColor(MyAppData.of(context).theme.primaryColor);
           }
           SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-            statusBarColor: theme.primaryColor,
+            statusBarColor: MyAppData.of(context).theme.primaryColor,
           ));
           return MaterialApp(
             debugShowCheckedModeBanner: false,
             title: 'Weather Bug',
-            theme: theme,
+            theme: MyAppData.of(context).theme,
             initialRoute: '/',
             routes: {
               '/': (context) => SplashScreen(),
@@ -50,7 +82,10 @@ class MyApp extends StatelessWidget {
   }
 
   loadTheme(BuildContext context) async {
-    final intColor = await sharedPreference.getThemeColor();
+    final intColor =
+        await MyAppData.of(context).sharedPreferenceUtilities.getThemeColor();
+    MyAppData.of(context).popUps = await MyAppData.of(context).sharedPreferenceUtilities.getSettings('popUps');
+    MyAppData.of(context).sound = await MyAppData.of(context).sharedPreferenceUtilities.getSettings('sound');
     BlocProvider.of<ThemeBloc>(context).add(ChangeTheme(color: intColor));
   }
 }
